@@ -26,7 +26,7 @@ jobs:
         run: '"C:/Program Files/Microsoft Visual Studio/2022/Enterprise/Msbuild/Current/Bin/MSBuild.exe" -property:Configuration=Release_Version'
         
       - name: Package Release Builds
-        if: ${{ github.event_name == 'push' }}
+        #if: ${{ github.event_name == 'push' }}
         shell: cmd
         run: |
           move /y Release\AmongUsMenu.dll AmongUsMenu.dll
@@ -34,7 +34,7 @@ jobs:
           tar -caf Release.zip AmongUsMenu.dll version.dll LICENSE
         
       - name: Upload Release Artifact
-        if: ${{ github.event_name == 'push' }}
+        #if: ${{ github.event_name == 'push' }}
         uses: actions/upload-artifact@v2.2.3
         with:
           name: Release
@@ -55,7 +55,7 @@ jobs:
         run: '"C:/Program Files/Microsoft Visual Studio/2022/Enterprise/Msbuild/Current/Bin/MSBuild.exe" -property:Configuration=Debug_Version'
         
       - name: Package Debug Builds
-        if: ${{ github.event_name == 'push' }}
+        #if: ${{ github.event_name == 'push' }}
         shell: cmd
         run: |
           move /y Debug\AmongUsMenu.dll AmongUsMenu.dll
@@ -63,7 +63,7 @@ jobs:
           tar -caf Debug.zip AmongUsMenu.dll version.dll LICENSE
         
       - name: Upload Debug Artifact
-        if: ${{ github.event_name == 'push' }}
+        #if: ${{ github.event_name == 'push' }}
         uses: actions/upload-artifact@v2.2.3
         with:
           name: Debug
