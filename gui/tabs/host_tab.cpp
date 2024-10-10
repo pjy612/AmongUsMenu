@@ -33,24 +33,40 @@ namespace HostTab {
 					if (State.assignedRolesPlayer[index] == nullptr)
 						continue;
 
-					app::GameData_PlayerOutfit* outfit = GetPlayerOutfit(playerData);
+					auto outfit = GetPlayerOutfit(playerData);
 					if (outfit == NULL) continue;
-					const std::string& playerName = convert_from_string(GameData_PlayerOutfit_get_PlayerName(outfit, nullptr));
+					const std::string& playerName = convert_from_string(outfit->fields.PlayerName);
 					if (CustomListBoxInt(playerName.c_str(), reinterpret_cast<int*>(&State.assignedRoles[index]), ROLE_NAMES, 80 * State.dpiScale))
 					{
 						State.engineers_amount = (int)GetRoleCount(RoleType::Engineer);
 						State.scientists_amount = (int)GetRoleCount(RoleType::Scientist);
 						State.shapeshifters_amount = (int)GetRoleCount(RoleType::Shapeshifter);
 						State.impostors_amount = (int)GetRoleCount(RoleType::Impostor);
+						State.crewmates_amount = (int)GetRoleCount(RoleType::Crewmate);
+
 						if (State.impostors_amount + State.shapeshifters_amount > maxImposterAmount)
 						{
 							if(State.assignedRoles[index] == RoleType::Shapeshifter)
-								State.assignedRoles[index] = RoleType::Engineer;
+								State.assignedRoles[index] = RoleType::Random; //Set to random to avoid bugs.
 							else if(State.assignedRoles[index] == RoleType::Impostor)
 								State.assignedRoles[index] = RoleType::Random;
-							State.shapeshifters_amount = (int)GetRoleCount(RoleType::Shapeshifter);
-							State.impostors_amount = (int)GetRoleCount(RoleType::Impostor);
 						}
+
+						if (State.assignedRoles[index] == RoleType::Engineer || State.assignedRoles[index] == RoleType::Scientist || State.assignedRoles[index] == RoleType::Crewmate) {			
+							if (State.engineers_amount + State.scientists_amount + State.crewmates_amount >= (int)playerAmount)
+								State.assignedRoles[index] = RoleType::Random;
+						} //Some may set all players to non imps. This hangs the game on beginning. Leave space to Random so we have imps.
+
+						if (options.GetGameMode() == GameModes__Enum::HideNSeek)
+						{
+							if (State.assignedRoles[index] == RoleType::Shapeshifter)
+								State.assignedRoles[index] = RoleType::Random;
+							else if (State.assignedRoles[index] == RoleType::Scientist)
+								State.assignedRoles[index] = RoleType::Engineer;
+							else if (State.assignedRoles[index] == RoleType::Crewmate)
+								State.assignedRoles[index] = RoleType::Engineer;
+						} //Assign other roles in hidenseek causes game bug.
+						//These are organized. Do not change the order unless you find it necessary.
 
 						if (!IsInGame()) {
 							SetRoleAmount(RoleTypes__Enum::Engineer, State.engineers_amount);
@@ -69,17 +85,23 @@ namespace HostTab {
 
 				// AU v2022.8.24 has been able to change maps in lobby.
 				State.mapHostChoice = options.GetByte(app::ByteOptionNames__Enum::MapId);
-				State.mapHostChoice = std::clamp(State.mapHostChoice, 0, 4);
+				if (State.mapHostChoice > 3)
+					State.mapHostChoice--;
+				State.mapHostChoice = std::clamp(State.mapHostChoice, 0, (int)MAP_NAMES.size()-1);
 				if (CustomListBoxInt("Map", &State.mapHostChoice, MAP_NAMES, 75 * State.dpiScale)) {
 					if (!IsInGame()) {
-						if (State.mapHostChoice == 3) {
+						// disable flip
+						/*if (State.mapHostChoice == 3) {
 							options.SetByte(app::ByteOptionNames__Enum::MapId, 0);
 							State.FlipSkeld = true;
 						}
 						else {
 							options.SetByte(app::ByteOptionNames__Enum::MapId, State.mapHostChoice);
 							State.FlipSkeld = false;
-						}
+						}*/
+						auto id = State.mapHostChoice;
+						if (id >= 3) id++;
+						options.SetByte(app::ByteOptionNames__Enum::MapId, id);
 					}
 				}
 				ImGui::Dummy(ImVec2(7, 7) * State.dpiScale);

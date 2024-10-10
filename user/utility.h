@@ -84,19 +84,20 @@ class PlayerSelection {
 #endif
 			return _playerData->fields.Disconnected;
 		}
-		constexpr bool equals(_Maybenull_ const PlayerControl* playerControl) const {
-			return _playerControl == playerControl;
+		constexpr bool equals(const Result& _Right) const noexcept {
+			if (!this->has_value() || !_Right.has_value()) return false;
+			return _playerControl == _Right._playerControl;
 		}
-		constexpr bool equals(_Maybenull_ const GameData_PlayerInfo* playerData) const {
-			return _playerData == playerData;
+		constexpr bool has_value() const noexcept {
+			return _has_value;
 		}
-		constexpr bool has_value() const {
+		constexpr operator bool() const noexcept {
 			return _has_value;
 		}
 	private:
 		friend class PlayerSelection;
 		PlayerControl* _playerControl;
-		GameData_PlayerInfo* _playerData;
+		NetworkedPlayerInfo* _playerData;
 		bool _has_value;
 
 		constexpr Result() noexcept {
@@ -105,7 +106,7 @@ class PlayerSelection {
 			_has_value = false;
 		}
 
-		constexpr Result(_Notnull_ PlayerControl* pc, _Notnull_ GameData_PlayerInfo* data) {
+		constexpr Result(_Notnull_ PlayerControl* pc, _Notnull_ NetworkedPlayerInfo* data) {
 			_playerControl = pc;
 			_playerData = data;
 			_has_value = true;
@@ -115,14 +116,25 @@ class PlayerSelection {
 public:
 	PlayerSelection() noexcept;
 	explicit PlayerSelection(const  PlayerControl* playerControl);
-	explicit PlayerSelection(GameData_PlayerInfo* playerData);
+	explicit PlayerSelection(NetworkedPlayerInfo* playerData);
+	PlayerSelection(const PlayerSelection::Result& result);
 
 	PlayerSelection::Result validate();
 
 	bool equals(const PlayerSelection& selectedPlayer) const;
-	Game::PlayerId get_PlayerId() const noexcept;
-	Game::ClientId get_ClientId() const noexcept;
-	bool is_LocalPlayer() const noexcept;
+	bool equals(const PlayerSelection::Result& selectedPlayer) const;
+	Game::PlayerId get_PlayerId() const noexcept {
+		return this->playerId;
+	}
+	Game::ClientId get_ClientId() const noexcept {
+		return this->clientId;
+	}
+
+	constexpr void reset() noexcept {
+		this->clientId = Game::NoClientId;
+		this->playerId = Game::NoPlayerId;
+	}
+
 	bool has_value() const noexcept {
 		return (this->clientId != Game::NoClientId || this->playerId != Game::NoPlayerId);
 	}
@@ -130,7 +142,7 @@ public:
 		return validate().has_value();
 	}
 	/*[[deprecated]]*/ std::optional<PlayerControl*> get_PlayerControl() const;
-	/*[[deprecated]]*/ std::optional<GameData_PlayerInfo*> get_PlayerData() const;
+	/*[[deprecated]]*/ std::optional<NetworkedPlayerInfo*> get_PlayerData() const;
 };
 
 int randi(int lo, int hi);
@@ -143,18 +155,19 @@ bool IsInMultiplayerGame();
 bool IsColorBlindMode();
 int GetMaxImposterAmount(int playerAmount);
 int GenerateRandomNumber(int min, int max);
-GameData_PlayerInfo* GetPlayerData(PlayerControl* player);
+NetworkedPlayerInfo* GetPlayerData(PlayerControl* player);
 Vector2 GetTrueAdjustedPosition(PlayerControl* player);
-GameData_PlayerInfo* GetPlayerDataById(Game::PlayerId id);
+NetworkedPlayerInfo* GetPlayerDataById(Game::PlayerId id);
 PlayerControl* GetPlayerControlById(Game::PlayerId id);
-PlainDoor* GetPlainDoorByRoom(SystemTypes__Enum room);
-il2cpp::Array<PlainDoor__Array> GetAllPlainDoors();
+// MushroomWallDoor or PlainDoor
+OpenableDoor* GetOpenableDoorByRoom(SystemTypes__Enum room);
+il2cpp::Array<OpenableDoor__Array> GetAllOpenableDoors();
 il2cpp::List<List_1_PlayerControl_> GetAllPlayerControl();
-il2cpp::List<List_1_GameData_PlayerInfo_> GetAllPlayerData();
+il2cpp::List<List_1_NetworkedPlayerInfo_> GetAllPlayerData();
 il2cpp::Array<DeadBody__Array> GetAllDeadBodies();
 il2cpp::List<List_1_PlayerTask_> GetPlayerTasks(PlayerControl* player);
 std::vector<NormalPlayerTask*> GetNormalPlayerTasks(PlayerControl* player);
-SabotageTask* GetSabotageTask(PlayerControl* player);
+Object_1* GetSabotageTask(PlayerControl* player);
 void RepairSabotage(PlayerControl* player);
 void CompleteTask(NormalPlayerTask* playerTask);
 const char* TranslateTaskTypes(TaskTypes__Enum taskType);
@@ -165,9 +178,9 @@ std::string getGameVersion();
 SystemTypes__Enum GetSystemTypes(const Vector2& vector);
 // TO-DO:
 // some C++ wizardry to allow overloading on pointer types w/ different base type (then we can rename both to just GetEventPlayer)
-std::optional<EVENT_PLAYER> GetEventPlayer(GameData_PlayerInfo* playerInfo);
+std::optional<EVENT_PLAYER> GetEventPlayer(NetworkedPlayerInfo* playerInfo);
 std::optional<EVENT_PLAYER> GetEventPlayerControl(PlayerControl* player);
-std::optional<Vector2> GetTargetPosition(GameData_PlayerInfo* playerInfo);
+std::optional<Vector2> GetTargetPosition(NetworkedPlayerInfo* playerInfo);
 il2cpp::Array<Camera__Array> GetAllCameras();
 il2cpp::List<List_1_InnerNet_ClientData_> GetAllClients();
 Vector2 GetSpawnLocation(Game::PlayerId playerId, int numPlayer, bool initialSpawn);
@@ -177,15 +190,15 @@ bool Equals(const Vector2& vec1, const Vector2& vec2);
 std::string ToString(Object* object);
 std::string ToString(Game::PlayerId id);
 std::string ToString(__maybenull PlayerControl* player);
-std::string ToString(__maybenull GameData_PlayerInfo* data);
+std::string ToString(__maybenull NetworkedPlayerInfo* data);
 std::string GetGitCommit();
 std::string GetGitBranch();
-void ImpersonateName(PlayerSelection& player);
+void ImpersonateName(__maybenull NetworkedPlayerInfo* data);
 Game::ColorId GetRandomColorId();
 void SaveOriginalAppearance();
 void ResetOriginalAppearance();
-bool PlayerIsImpostor(GameData_PlayerInfo* player);
-GameData_PlayerOutfit* GetPlayerOutfit(GameData_PlayerInfo* player, bool includeShapeshifted = false);
+bool PlayerIsImpostor(NetworkedPlayerInfo* player);
+NetworkedPlayerInfo_PlayerOutfit* GetPlayerOutfit(NetworkedPlayerInfo* player, bool includeShapeshifted = false);
 Color GetRoleColor(RoleBehaviour* roleBehaviour);
 std::string GetRoleName(RoleBehaviour* roleBehaviour, bool abbreviated = false);
 RoleTypes__Enum GetRoleTypesEnum(RoleType role);

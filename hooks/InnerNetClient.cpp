@@ -9,6 +9,7 @@
 #include "profiler.h"
 #include <sstream>
 #include "esp.hpp"
+#include <algorithm>
 
 void dInnerNetClient_Update(InnerNetClient* __this, MethodInfo* method)
 {
@@ -93,9 +94,9 @@ void dInnerNetClient_Update(InnerNetClient* __this, MethodInfo* method)
 
     if (IsInLobby()) {
         if (State.originalName == "-") {
-            app::GameData_PlayerOutfit* outfit = GetPlayerOutfit(GetPlayerData(*Game::pLocalPlayer));
+            auto outfit = GetPlayerOutfit(GetPlayerData(*Game::pLocalPlayer));
             if (outfit != NULL)
-                State.originalName = convert_from_string(GameData_PlayerOutfit_get_PlayerName(outfit, nullptr));
+                State.originalName = convert_from_string(outfit->fields.PlayerName);
         }
 
         if (!State.lobbyRpcQueue.empty()) {
@@ -218,6 +219,12 @@ static void onGameEnd() {
     Replay::Reset();
     State.aumUsers.clear();
     State.chatMessages.clear();
+    std::fill(State.assignedRoles.begin(), State.assignedRoles.end(), RoleType::Random); //Clear Pre assigned roles to avoid bugs.
+    State.engineers_amount = 0;
+    State.scientists_amount = 0;
+    State.shapeshifters_amount = 0;
+    State.impostors_amount = 0;
+    State.crewmates_amount = 0; //We need to reset these. Or if the host doesn't turn on host tab ,these value won't update.
     State.MatchEnd = std::chrono::system_clock::now();
 
     drawing_t& instance = Esp::GetDrawing();

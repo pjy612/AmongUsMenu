@@ -132,6 +132,7 @@ public:
     int shapeshifters_amount = 0;
     int engineers_amount = 0;
     int scientists_amount = 0;
+    int crewmates_amount = 0;
 
     bool Wallhack = false;
     bool FreeCam = false;
@@ -180,7 +181,8 @@ public:
         Ship = 0,
         Hq = 1,
         Pb = 2,
-        Airship = 3
+        Airship = 3,
+        Fungle = 4,
     } mapType = MapType::Ship;
 
     bool AutoOpenDoors = false;

@@ -6,7 +6,7 @@
 #include "replay.hpp"
 #include "profiler.h"
 
-float dShipStatus_CalculateLightRadius(ShipStatus* __this, GameData_PlayerInfo* player, MethodInfo* method) {
+float dShipStatus_CalculateLightRadius(ShipStatus* __this, NetworkedPlayerInfo* player, MethodInfo* method) {
 	if (State.MaxVision || State.EnableZoom || State.FreeCam)
 		return 10.F;
 	else
@@ -18,10 +18,10 @@ void dShipStatus_OnEnable(ShipStatus* __this, MethodInfo* method) {
 
 	Replay::Reset();
 
-	if (Constants_ShouldFlipSkeld(NULL))
+	/*if (Constants_ShouldFlipSkeld(NULL))
 		State.FlipSkeld = true;
 	else
-		State.FlipSkeld = false;
+		State.FlipSkeld = false;*/
 
 	State.MatchStart = std::chrono::system_clock::now();
 	State.MatchCurrent = State.MatchStart;

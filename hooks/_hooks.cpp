@@ -6,12 +6,13 @@
 #include "main.h"
 #include "SignatureScan.hpp"
 #include "game.h"
+#include "logger.h"
 
 using namespace Game;
 
 bool HookFunction(PVOID* ppPointer, PVOID pDetour, const char* functionName) {
 	if (const auto error = DetourAttach(ppPointer, pDetour); error != NO_ERROR) {
-		std::cout << "Failed to hook " << functionName << ", error " << error << std::endl;
+		STREAM_ERROR("Failed to hook " << functionName << ", error " << error);
 		return false;
 	}
 	//std::cout << "Hooked " << functionName << std::endl;
@@ -22,7 +23,7 @@ bool HookFunction(PVOID* ppPointer, PVOID pDetour, const char* functionName) {
 
 bool UnhookFunction(PVOID* ppPointer, PVOID pDetour, const char* functionName) {
 	if (const auto error = DetourDetach(ppPointer, pDetour); error != NO_ERROR) {
-		std::cout << "Failed to unhook " << functionName << ", error " << error << std::endl;
+		STREAM_ERROR("Failed to unhook " << functionName << ", error " << error);
 		return false;
 	}
 	//std::cout << "Unhooked " << functionName << std::endl;
@@ -37,7 +38,7 @@ void DetourInitilization() {
 
 	directx11 d3d11 = directx11();
 	if (!d3d11.presentFunction) {
-		std::cout << "Unable to retrieve IDXGISwapChain::Present method" << std::endl;
+		LOG_ERROR("Unable to retrieve IDXGISwapChain::Present method");
 		return;
 	} else {
 		// Attempting to hook the Steam overlay
@@ -128,7 +129,7 @@ void DetourInitilization() {
 	HOOKFUNC(InnerNetClient_Update);
 	HOOKFUNC(AmongUsClient_OnPlayerLeft);
 	HOOKFUNC(CustomNetworkTransform_SnapTo);
-	HOOKFUNC(Constants_ShouldFlipSkeld);
+	//HOOKFUNC(Constants_ShouldFlipSkeld);
 	HOOKFUNC(LobbyBehaviour_Start);
 	HOOKFUNC(GameObject_SetActive);
 	//HOOKFUNC(NoShadowBehaviour_LateUpdate);
@@ -155,7 +156,10 @@ void DetourInitilization() {
 	HOOKFUNC(EOSManager_UpdatePermissionKeys);
 	HOOKFUNC(GameOptionsManager_set_CurrentGameOptions);
 	HOOKFUNC(ExileController_ReEnableGameplay);
-	HOOKFUNC(SabotageSystemType_ForceSabTime);
+	HOOKFUNC(SabotageSystemType_SetInitialSabotageCooldown);
+	HOOKFUNC(FungleShipStatus_OnEnable);
+	HOOKFUNC(MushroomWallDoor_SetDoorway);
+	HOOKFUNC(MushroomDoorSabotageMinigame_Begin);
 
 
 	if (!HookFunction(&(PVOID&)oPresent, dPresent, "D3D_PRESENT_FUNCTION")) return;
@@ -212,7 +216,7 @@ void DetourUninitialization()
 	UNHOOKFUNC(InnerNetClient_Update);
 	UNHOOKFUNC(AmongUsClient_OnPlayerLeft);
 	UNHOOKFUNC(CustomNetworkTransform_SnapTo);
-	UNHOOKFUNC(Constants_ShouldFlipSkeld);
+	//UNHOOKFUNC(Constants_ShouldFlipSkeld);
 	UNHOOKFUNC(LobbyBehaviour_Start);
 	//UNHOOKFUNC(NoShadowBehaviour_LateUpdate);
 	UNHOOKFUNC(FollowerCamera_Update);
@@ -236,7 +240,10 @@ void DetourUninitialization()
 	UNHOOKFUNC(EOSManager_UpdatePermissionKeys);
 	UNHOOKFUNC(GameOptionsManager_set_CurrentGameOptions);
 	UNHOOKFUNC(ExileController_ReEnableGameplay);
-	UNHOOKFUNC(SabotageSystemType_ForceSabTime);
+	UNHOOKFUNC(SabotageSystemType_SetInitialSabotageCooldown);
+	UNHOOKFUNC(FungleShipStatus_OnEnable);
+	UNHOOKFUNC(MushroomWallDoor_SetDoorway);
+	UNHOOKFUNC(MushroomDoorSabotageMinigame_Begin);
 
 	if (DetourDetach(&(PVOID&)oPresent, dPresent) != 0) return;
 

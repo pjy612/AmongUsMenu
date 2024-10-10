@@ -3,10 +3,12 @@
 #include "state.hpp"
 #include "logger.h"
 #include "utility.h"
+#include "replay.hpp"
+#include "profiler.h"
 
-void dAirshipStatus_OnEnable(AirshipStatus* __this, MethodInfo* method)
+void dFungleShipStatus_OnEnable(FungleShipStatus* __this, MethodInfo* method)
 {
-	AirshipStatus_OnEnable(__this, method);
+	FungleShipStatus_OnEnable(__this, method);
 
 	Replay::Reset();
 
@@ -26,16 +28,8 @@ void dAirshipStatus_OnEnable(AirshipStatus* __this, MethodInfo* method)
 
 	std::sort(State.mapDoors.begin(), State.mapDoors.end());
 
-	State.mapType = Settings::MapType::Airship;
+	State.mapType = Settings::MapType::Fungle;
 
 	State.userName = GetPlayerName();
 	ResetOriginalAppearance();
-}
-
-float dAirshipStatus_CalculateLightRadius(AirshipStatus* __this, NetworkedPlayerInfo* player, MethodInfo* method)
-{
-	if (State.MaxVision || State.EnableZoom || State.FreeCam)
-		return 10.F;
-	else
-		return AirshipStatus_CalculateLightRadius(__this, player, method);
 }
